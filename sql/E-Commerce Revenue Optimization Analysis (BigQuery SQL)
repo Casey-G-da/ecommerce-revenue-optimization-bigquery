@@ -1,0 +1,105 @@
+SELECT *
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+LIMIT 10;
+-----------------------------------------------------------------
+
+Which Traffic Source Generates the Most Revenue?
+
+SELECT
+  trafficSource.source AS traffic_source,
+  SUM(totals.totalTransactionRevenue)/1000000 AS total_revenue_usd,
+  COUNT(DISTINCT fullVisitorId) AS unique_users
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+WHERE totals.totalTransactionRevenue IS NOT NULL
+GROUP BY traffic_source
+ORDER BY total_revenue_usd DESC;
+
+--------------------------------------------------------------------------
+Device Performance 
+
+SELECT
+  device.deviceCategory AS device_type,
+  COUNT(DISTINCT fullVisitorId) AS users,
+  SUM(totals.transactions) AS total_transactions,
+  SUM(totals.totalTransactionRevenue)/1000000 AS revenue_usd,
+  ROUND(
+    SUM(totals.transactions) /
+    COUNT(DISTINCT fullVisitorId),
+    4
+  ) AS conversion_rate
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+WHERE totals.transactions IS NOT NULL
+GROUP BY device_type
+ORDER BY revenue_usd DESC;
+
+--------------------------------------------------------------------------
+Geographic Revenue Analysis
+
+SELECT
+  geoNetwork.country,
+  SUM(totals.totalTransactionRevenue)/1000000 AS revenue_usd,
+  SUM(totals.transactions) AS transactions
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+WHERE totals.totalTransactionRevenue IS NOT NULL
+GROUP BY geoNetwork.country
+ORDER BY revenue_usd DESC
+LIMIT 10;
+
+----------------------------------------------------------------------------
+
+Monthly Revenue Trend
+
+SELECT
+  FORMAT_DATE('%Y-%m', PARSE_DATE('%Y%m%d', date)) AS month,
+  SUM(totals.totalTransactionRevenue)/1000000 AS revenue_usd
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+WHERE totals.totalTransactionRevenue IS NOT NULL
+GROUP BY month
+ORDER BY month;
+
+-----------------------------------------------------------------------------
+
+Top Performing Traffic Sources by Month
+
+WITH monthly_source_revenue AS (
+  SELECT
+    FORMAT_DATE('%Y-%m', PARSE_DATE('%Y%m%d', date)) AS month,
+    trafficSource.source AS traffic_source,
+    SUM(totals.totalTransactionRevenue)/1000000 AS revenue_usd
+  FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+  WHERE totals.totalTransactionRevenue IS NOT NULL
+  GROUP BY month, traffic_source
+)
+
+SELECT *
+FROM (
+  SELECT *,
+         RANK() OVER (PARTITION BY month ORDER BY revenue_usd DESC) AS rank
+  FROM monthly_source_revenue
+)
+WHERE rank <= 3;
+
+---------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
