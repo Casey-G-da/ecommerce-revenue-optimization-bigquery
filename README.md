@@ -34,10 +34,6 @@ https://lookerstudio.google.com/s/g7Nmbkkp3FA
 - Device performance highlights desktop vs mobile differences in revenue and conversion.
 - Geographic heatmap shows revenue concentration by country.
 
-## Screenshots
-### Full Dashboard Overview
-![Dashboard Overview](Dashboard/looker_dashboard.png)
-
 ## SQL Files
 - `sql/01_build_table.sql` — builds the modeled KPI table
 - `sql/02_channel_device_summary.sql` — channel/device performance summary
